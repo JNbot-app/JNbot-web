@@ -44,12 +44,10 @@ const publicLookup = ((hostname: string, options: dns.LookupOptions, callback: (
 const perClient = new Map<string, number>();
 let open = 0;
 
-const cors = (origin: string | undefined) => ({ 'access-control-allow-origin': origin || '*' });
-
-const server = http.createServer((request, response) => {
-  const origin = request.headers.origin;
-  if (!originAllowed(origin, ALLOWED_ORIGINS)) return void response.writeHead(403).end('Origin not allowed');
-  response.writeHead(200, { 'content-type': 'text/plain', ...cors(origin) }).end('JNbot relay');
+// Plain HTTP only answers health checks (Render's has no Origin) and wake-up calls;
+// the origin check guards the WebSocket upgrade, which is the actual relay.
+const server = http.createServer((_request, response) => {
+  response.writeHead(200, { 'content-type': 'text/plain', 'access-control-allow-origin': '*' }).end('JNbot relay');
 });
 
 const wss = new WebSocketServer({ noServer: true, maxPayload: 4 << 20 });
