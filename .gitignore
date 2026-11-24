@@ -1,0 +1,5 @@
+node_modules
+dist
+public/backend
+.wrangler
+.env*

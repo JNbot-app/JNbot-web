@@ -1,0 +1,16 @@
+{
+  "name": "jnbot-relay",
+  "private": true,
+  "type": "module",
+  "description": "Node version of the JNbot web relay (WebSocket <-> TCP), for Render or any server.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node node/server.ts"
+  },
+  "dependencies": {
+    "ws": "^8.23.0"
+  }
+}

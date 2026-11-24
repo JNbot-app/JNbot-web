@@ -1,0 +1,8 @@
+name = "jnbot-relay"
+main = "src/index.ts"
+compatibility_date = "2025-06-01"
+
+[vars]
+# Comma-separated origins allowed to use the relay, this is the deployed site.
+# `npm run relay:dev` clears it, so local development is not blocked.
+ALLOWED_ORIGINS = "https://jnbot-web.pages.dev"

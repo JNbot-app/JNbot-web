@@ -1,0 +1,33 @@
+{
+  "name": "jnbot-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "JNbot in the browser: the desktop app's UI and bot runtime, running in Web Workers",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JNbot-app/JNbot-web.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:backend": "node scripts/build-backend.mjs",
+    "dev": "node scripts/build-backend.mjs --watch & vite",
+    "build": "node scripts/build-backend.mjs && vite build",
+    "preview": "vite preview",
+    "relay:dev": "wrangler dev --config relay/wrangler.toml --var ALLOWED_ORIGINS:",
+    "relay:deploy": "wrangler deploy --config relay/wrangler.toml",
+    "relay:node": "npm --prefix relay start",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name jnbot-web --branch main"
+  },
+  "devDependencies": {
+    "@noble/curves": "^1.9.7",
+    "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "^0.28.0",
+    "node-stdlib-browser": "^1.3.1",
+    "vite": "^8.3.5",
+    "wrangler": "^4.0.0"
+  }
+}
