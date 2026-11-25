@@ -5,6 +5,7 @@ import type { EndpointTransport, TransportFrame } from '../../../app/src/common/
 import type { NotificationInstance } from 'antd/es/notification/interface';
 import type { BackendMessage, UiMessage } from '../backend/protocol';
 import { showDesktopHint } from './desktopHint';
+import { openUrl } from './openUrl';
 
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8787';
 const BACKUP_RELAY_URL = import.meta.env.VITE_BACKUP_RELAY_URL || undefined;
@@ -29,6 +30,9 @@ export default class WorkerSocket extends MessengerSocket {
     };
     worker.onmessage = ({ data }: MessageEvent<BackendMessage>) => {
       if (data.kind === 'frame') for (const receiver of this.receivers) receiver(data.frame);
+      else if (data.kind === 'event') this.emitLocal(data.event, data.data);
+      else if (data.kind === 'open-url') openUrl(data.url, this.snackbar);
+      else if (data.kind === 'reload') location.reload();
       else if (data.kind === 'assigned') this.attach(data.address, transport);
       else if (data.kind === 'ready') {
         this.ready = true;

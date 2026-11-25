@@ -10,5 +10,11 @@ export type UiMessage =
 export type BackendMessage =
   | { kind: 'assigned'; address: Address }
   | { kind: 'frame'; frame: TransportFrame }
+  /** An app-wide event the desktop sends to its window (`global.send`). */
+  | { kind: 'event'; event: string; data: unknown }
+  /** Open a page the backend cannot open itself (the Dropbox sign-in). */
+  | { kind: 'open-url'; url: string }
+  /** Restart JNbot, as the desktop relaunches after switching storage. */
+  | { kind: 'reload' }
   | { kind: 'ready' }
   | { kind: 'fatal'; message: string };

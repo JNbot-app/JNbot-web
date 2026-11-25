@@ -14,7 +14,8 @@ the [desktop app](https://github.com/usserwout/JNbot-updater/releases/latest).
 - Add servers, detect their gamemodes and manage profiles.
 - Manage Minecraft accounts and join, monitor and control bots: chat, inventory, logs.
 - Run scripts, plugins, chains and triggers.
-- Everything is stored in the browser (IndexedDB).
+- Everything is stored in the browser (IndexedDB), or in your Dropbox with
+  Settings → Storage & backup, shared with the desktop app.
 
 ## Limits
 

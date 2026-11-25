@@ -1,7 +1,7 @@
 import { Button } from 'antd';
 import type { NotificationInstance } from 'antd/es/notification/interface';
 
-const DOWNLOAD_URL = 'https://github.com/usserwout/JNbot-updater/releases/latest';
+const DOWNLOAD_URL = 'https://jnbot.netlify.app/download';
 const DISMISSED_KEY = 'jnbot-web:desktop-hint-dismissed';
 const KEY = 'desktop-hint';
 

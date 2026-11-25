@@ -61,6 +61,7 @@ const nodeShims = {
       return { path: builtins[name] ?? unsupported };
     });
     build.onResolve({ filter: /^electron$/ }, () => ({ path: shim('electron.cjs') }));
+    build.onResolve({ filter: /^@xmcl\/installer$/ }, () => ({ path: shim('xmcl-installer.cjs') }));
     build.onResolve({ filter: disabledPackages }, () => ({ path: unsupported }));
     // Its "browser" entry leaves out the client; the shims make the Node one work.
     build.onResolve({ filter: /^minecraft-protocol$/ }, () => ({ path: path.join(app, 'node_modules/minecraft-protocol/src/index.js') }));

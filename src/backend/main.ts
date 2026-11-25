@@ -7,11 +7,15 @@ import type { BackendMessage, UiMessage } from './protocol';
 
 // Frames are JSON on every other transport (native bridge, WebRTC); match that
 // so values that cannot be cloned (functions) are dropped the same way.
-const send = (message: BackendMessage) =>
-  postMessage(message.kind === 'frame' ? { kind: 'frame', frame: JSON.parse(JSON.stringify(message.frame)) } : message);
+const send = (message: BackendMessage) => {
+  if (message.kind === 'frame') message = { kind: 'frame', frame: JSON.parse(JSON.stringify(message.frame)) };
+  else if (message.kind === 'event') message = { ...message, data: JSON.parse(JSON.stringify(message.data ?? null)) };
+  postMessage(message);
+};
 const principal = { kind: 'trusted-local', subjectId: 'web', permissions: unrestrictedPermissions() } as const;
 
 let registration: { address: Address; receive(frame: TransportFrame): void } | undefined;
+let storage: { flush(): Promise<unknown> } | undefined;
 
 async function start(relayUrl: string, backupRelayUrl = '') {
   const g = globalThis as any;
@@ -35,8 +39,29 @@ async function start(relayUrl: string, backupRelayUrl = '') {
     import('../../../app/src/main/src/messaging'),
     import('../../../app/src/main/src/messaging/bootstrap'),
   ]);
-  const runtime = await createCliRuntime({ kind: 'mobile' });
+  const { createWebStorage, registerWebStorageHandlers } = await import('./storage');
+  storage = createWebStorage();
+  const runtime = await createCliRuntime({ kind: 'mobile', storageMode: storage });
   const settings = runtime.handler.settings;
+  registerWebStorageHandlers(storage, () => runtime.handler, {
+    openUrl: (url) => send({ kind: 'open-url', url }),
+    // Save this tab's data first: the reload starts the backend from IndexedDB.
+    reload: () => void persist().finally(() => send({ kind: 'reload' })),
+  });
+  // Remote clients only get profile publications. This tab is the backend's own
+  // window, so it also gets the app-wide events the desktop sends to its window
+  // (MACROS, MC_SERVERS_UPDATE, ...); `socket === true` means peers only.
+  const sendToPeers = g.send as (event: string, data: unknown, socket?: unknown) => void;
+  g.send = (event: string, data: unknown, socket?: unknown) => {
+    if (socket !== true) {
+      try {
+        send({ kind: 'event', event, data });
+      } catch (error) {
+        console.warn(`[jnbot-web] could not send ${event} to the page`, error);
+      }
+    }
+    sendToPeers(event, data, socket);
+  };
   registration = backendMessaging.registerRemoteClient((frame) => send({ kind: 'frame', frame }), principal);
   const address = registration.address;
   const bootstrap = (): TransportFrame => ({
@@ -59,5 +84,6 @@ addEventListener('message', (event: MessageEvent<UiMessage>) => {
       send({ kind: 'fatal', message: error instanceof Error ? error.message : String(error) });
     });
   else if (message.kind === 'frame') registration?.receive(message.frame);
-  else if (message.kind === 'flush') void persist();
+  // Upload pending Dropbox changes too: they are otherwise sent a few seconds later.
+  else if (message.kind === 'flush') void Promise.allSettled([persist(), storage?.flush()]);
 });
